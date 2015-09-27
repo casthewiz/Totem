@@ -18,10 +18,20 @@ app.get('/', function(request, response) {
 
 app.get('/create', function(request, response){
   q = request.query;
-  db.users.save({user: q.user,
-                 password: q.password,
-                 website: q.website,
-                 userID: q.userID});
+  db.users.findAndModify({
+    query:{userID: q.userID,
+           website: q.website},
+    update:{
+    $setOnInsert: {user: q.user,
+                   password: q.password,
+                   website: q.website,
+                   userID: q.userID}
+    },
+    new: true,
+    upsert: true // insert the document if it does not exist
+  },function (err, doc, lastErrorObject) {
+    // doc.tag === 'maintainer'
+  })
 
   response.json(request.query);
 })
@@ -40,6 +50,21 @@ app.get('/update', function(request,response){
                   {$set: {password: q.password}},
                   function(err, docs){
     response.json(docs);
+  })
+})
+
+app.get('/totem/initialize', function(request,response){
+  q = request.query;
+  db.totemvault.findAndModify({
+    query:{userID: q.userID},
+    update:{
+    $setOnInsert: {userID: q.userID,
+                   tags: q.tags}
+    },
+    new: true,
+    upsert: true // insert the document if it does not exist
+  },function (err, doc, lastErrorObject) {
+    // doc.tag === 'maintainer'
   })
 })
 
