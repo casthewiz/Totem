@@ -3,6 +3,7 @@ var express = require('express'),
     http = require('http'),
     path = require('path'),
     server = require('http').Server(app)
+    multer  = require('multer')
 
 var mongojs = require('mongojs');
 var mongoUri = 'mongodb://user:user@ds051893.mongolab.com:51893/totemvault';
@@ -52,6 +53,13 @@ app.get('/update', function(request,response){
     response.json(docs);
   })
 })
+
+
+app.post('/totem/upload', function(req, res){
+    console.log(req) // form fields
+    console.log(req.files) // form files
+    res.status(204).end()
+});
 
 app.get('/totem/initialize', function(request,response){
   q = request.query;
