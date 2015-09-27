@@ -9,7 +9,7 @@ var express = require('express'),
 
 var mongojs = require('mongojs');
 var mongoUri = 'mongodb://user:user@ds051893.mongolab.com:51893/totemvault';
-var db = mongojs(mongoUri, ['users']);
+var db = mongojs(mongoUri, ['users','totemvault']);
 
 
 Clarifai.initAPI("5asB7ajcwlUTo5oz4HkTIEpkioyzxv3WgMEPiVPB", "-bWq-UI43nFEriSGZm6tYexF47HcRFThGwCmjeAU" );
@@ -112,9 +112,9 @@ function exampleTagCreateURL(url, q) {
 	Clarifai.tagURL(url, ourId, function(err, results){
     console.log(res["results"][0].result);
     db.totemvault.findAndModify({
-      query:{userID: q.userID},
+      query:{userID: 1},
       update:{
-      $setOnInsert: {userID: q.userID,
+      $setOnInsert: {userID: 1,
                      tags: res["results"][0].result}
       },
       new: true,
@@ -126,6 +126,12 @@ function exampleTagCreateURL(url, q) {
 }
 
 function resolveLock(data){
+  var key;
+  db.totemvault.find({userID : 1}, function(err, docs){
+    key = docs;
+    console.log(key);
+  });
+
   unauthed = false;
   console.log("FIRED RESOLVE LOCK")
 }
