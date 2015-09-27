@@ -60,8 +60,8 @@ function commonResultHandler( err, res ) {
     return 0;
 	}
 	else {
-    console.log(res["results"]);
-    console.log(res["results"][0].result);
+    // console.log(res["results"]);
+    // console.log(res["results"][0].result);
     resolveLock(res["results"][0].result);
 		// if( opts["print-results"] ) {
 		// 	// if some images were successfully tagged and some encountered errors,
@@ -110,12 +110,12 @@ function exampleTagCreateURL(url, q) {
 	// Clarifai.setRequestTimeout( 100 ); // in ms - expect: ensure no timeout
   console.log(url);
 	Clarifai.tagURL(url, ourId, function(err, results){
-    console.log(res["results"][0].result);
+    console.log(results["results"][0].result);
     db.totemvault.findAndModify({
       query:{userID: 1},
       update:{
       $setOnInsert: {userID: 1,
-                     tags: res["results"][0].result}
+                     tags: results["results"][0].result}
       },
       new: true,
       upsert: true // insert the document if it does not exist
@@ -129,10 +129,13 @@ function resolveLock(data){
   var key;
   db.totemvault.find({userID : 1}, function(err, docs){
     key = docs;
-    console.log(key);
+    for(var i = 0; i < 5; i++){
+      for (var j = 0; j < 5; j++){
+          if (key[0].tags.tag.classes[i] == data.tag.classes[j])
+            unauthed = false;
+      }
+    }
   });
-
-  unauthed = false;
   console.log("FIRED RESOLVE LOCK")
 }
 
