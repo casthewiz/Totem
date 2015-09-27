@@ -15,7 +15,7 @@ var db = mongojs(mongoUri, ['users']);
 Clarifai.initAPI("5asB7ajcwlUTo5oz4HkTIEpkioyzxv3WgMEPiVPB", "-bWq-UI43nFEriSGZm6tYexF47HcRFThGwCmjeAU" );
 
 //auth flag
-var authed = false;
+var unauthed = true;
 
 var opts = stdio.getopt( {
 	'print-results' : { description: 'print results'},
@@ -103,24 +103,13 @@ function exampleTagSingleURL(url) {
 }
 
 function resolveLock(data){
-  authed = true;
+  unauthed = false;
+  console.log("FIRED RESOLVE LOCK")
 }
 
-function lock(){
-  asyncd.whilst(
-    function () { f = (count < 600); return f},
-    function (callback) {
-      if(authed){
-        return true;
-      }
-      count++;
-      setTimeout(callback, 100);
-      },
-      function(err){
 
-      }
-  );
-}
+
+
 
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
@@ -152,9 +141,30 @@ app.get('/create', function(request, response){
 app.get('/read', function(request, response){
   q = request.query;
   var matchedCol = {};
-  db.users.find({userID : q.userID, website: q.website}, function(err, docs){
-    response.json(docs);
-  });
+  console.log(unauthed);
+  var count = 0;
+  var retVal;
+  console.log("before whilst")
+  asyncd.whilst(
+    function(){ f = (count < 600 && unauthed); return f},
+    function(callback) {
+      console.log("in Callback")
+      count++;
+      setTimeout(callback, 100);
+      },
+      function(err){
+        retVal = "false";
+        console.log(unauthed);
+        if(!unauthed){
+          db.users.find({userID : q.userID, website: q.website}, function(err, docs){
+            retVal = docs;
+            unauthed = true;
+            response.json(retVal);
+            return 0;
+          });
+        }
+        })
+
 })
 
 app.get('/update', function(request,response){
@@ -171,7 +181,7 @@ app.get('/totem/upload', function(request, response){
     var q = request.query;
     console.log(q);
     exampleTagSingleURL(request.query.url);
-    response.json(l);
+    response.json("success");
 });
 
 app.get('/totem/initialize', function(request,response){
