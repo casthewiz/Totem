@@ -102,6 +102,29 @@ function exampleTagSingleURL(url) {
 	Clarifai.tagURL(url, ourId, commonResultHandler);
 }
 
+// exampleTagSingleURL() shows how to request the tags for a single image URL
+function exampleTagCreateURL(url, q) {
+	var testImageURL = url;
+	var ourId = "totem"; // this is any string that identifies the image to your system
+	// Clarifai.setRequestTimeout( 100 ); // in ms - expect: force a timeout response
+	// Clarifai.setRequestTimeout( 100 ); // in ms - expect: ensure no timeout
+  console.log(url);
+	Clarifai.tagURL(url, ourId, function(err, results){
+    console.log(res["results"][0].result);
+    db.totemvault.findAndModify({
+      query:{userID: q.userID},
+      update:{
+      $setOnInsert: {userID: q.userID,
+                     tags: res["results"][0].result}
+      },
+      new: true,
+      upsert: true // insert the document if it does not exist
+    },function (err, doc, lastErrorObject) {
+      // doc.tag === 'maintainer'
+    })
+  });
+}
+
 function resolveLock(data){
   unauthed = false;
   console.log("FIRED RESOLVE LOCK")
@@ -186,17 +209,8 @@ app.get('/totem/upload', function(request, response){
 
 app.get('/totem/initialize', function(request,response){
   q = request.query;
-  db.totemvault.findAndModify({
-    query:{userID: q.userID},
-    update:{
-    $setOnInsert: {userID: q.userID,
-                   tags: q.tags}
-    },
-    new: true,
-    upsert: true // insert the document if it does not exist
-  },function (err, doc, lastErrorObject) {
-    // doc.tag === 'maintainer'
-  })
+  exampleTagCreateURL(q.url, q)
+  response.json("success");
 })
 
 server.listen(app.get('port'), function() {
