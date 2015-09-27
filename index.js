@@ -133,6 +133,7 @@ function resolveLock(data){
       for (var j = 0; j < 5; j++){
           if (key[0].tags.tag.classes[i] == data.tag.classes[j])
             unauthed = false;
+            //PRODUCTION
       }
     }
   });
