@@ -107,7 +107,7 @@ function resolveLock(data){
 }
 
 function lock(){
-  async.whilst(
+  asyncd.whilst(
     function () { f = (count < 600); return f},
     function (callback) {
       if(authed){
